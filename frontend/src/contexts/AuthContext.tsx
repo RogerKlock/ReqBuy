@@ -1,30 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import api from '../services/api'
-
-interface User {
-  id: number
-  name: string
-  email: string
-  role: 'solicitante' | 'aprovador' | 'financeiro'
-}
-
-interface RegisterData {
-  name: string
-  email: string
-  password: string
-  departmentId: number
-}
-
-interface AuthContextValue {
-  user: User | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (data: RegisterData) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
+import { AuthContext } from './authContextValue'
+import type { RegisterData, User } from './authTypes'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   // token agora fica em cookie HttpOnly — não mais em sessionStorage.
@@ -84,10 +62,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth deve ser usado dentro de AuthProvider')
-  return ctx
 }

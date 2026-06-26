@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/useAuth'
 import Layout from '../components/Layout'
 import StatCard from '../components/ui/StatCard'
 import LoadingSpinner from '../components/ui/LoadingSpinner'

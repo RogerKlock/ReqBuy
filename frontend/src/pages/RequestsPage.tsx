@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/useAuth'
 import Layout from '../components/Layout'
 import StatusBadge from '../components/ui/StatusBadge'
 import Button from '../components/ui/Button'
@@ -45,8 +45,8 @@ export default function RequestsPage() {
   const [modalComment, setModalComment] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
 
-  function fetchRequests() {
-    setLoading(true)
+  function fetchRequests(showLoading = true) {
+    if (showLoading) setLoading(true)
     api
       .get<Requisicao[]>('/requests')
       .then((res) => setRequests(res.data))
@@ -55,7 +55,23 @@ export default function RequestsPage() {
   }
 
   useEffect(() => {
-    fetchRequests()
+    let active = true
+
+    api
+      .get<Requisicao[]>('/requests')
+      .then((res) => {
+        if (active) setRequests(res.data)
+      })
+      .catch(() => {
+        if (active) setError('Erro ao carregar requisições.')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
 
   function openActionModal(id: number, action: 'aprovado' | 'rejeitado') {
@@ -77,7 +93,7 @@ export default function RequestsPage() {
           ? 'Requisição aprovada com sucesso!'
           : 'Requisição rejeitada.'
       )
-      fetchRequests()
+      fetchRequests(false)
     } catch {
       toast.error('Erro ao processar ação.')
     } finally {
