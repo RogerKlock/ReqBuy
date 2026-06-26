@@ -20,23 +20,27 @@ interface AuthContextValue {
   user: User | null
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // token agora fica em cookie HttpOnly — não mais em sessionStorage.
+  // Apenas o objeto `user` (sem dados sensíveis) é mantido em estado React.
   const [user, setUser] = useState<User | null>(() => {
     const stored = sessionStorage.getItem('user')
     return stored ? (JSON.parse(stored) as User) : null
   })
 
   async function login(email: string, password: string) {
-    const { data } = await api.post<{ token: string; user: User }>('/auth/login', {
+    // o backend emite o token como cookie HttpOnly.
+    // O body da resposta contém apenas os dados do usuário (sem token).
+    const { data } = await api.post<{ message: string; user: User }>('/auth/login', {
       email,
       password,
     })
-    sessionStorage.setItem('token', data.token)
+    // Apenas dados não-sensíveis em sessionStorage (sem token)
     sessionStorage.setItem('user', JSON.stringify(data.user))
     setUser(data.user)
   }
@@ -46,10 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Não faz auto-login — usuário deve logar após o cadastro
   }
 
-  function logout() {
-    sessionStorage.removeItem('token')
-    sessionStorage.removeItem('user')
-    setUser(null)
+  async function logout() {
+    try {
+      // chama /logout para revogar o token na blacklist do backend
+      // o backend também limpa o cookie HttpOnly
+      await api.post('/auth/logout')
+    } catch {
+      // ignora erros de rede no logout
+    } finally {
+      sessionStorage.removeItem('user')
+      setUser(null)
+    }
   }
 
   return (
