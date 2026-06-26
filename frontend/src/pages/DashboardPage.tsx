@@ -15,11 +15,6 @@ import {
   ArrowRight,
 } from 'lucide-react'
 
-const roleLabel: Record<string, string> = {
-  solicitante: 'Solicitante',
-  aprovador: 'Aprovador',
-  financeiro: 'Financeiro',
-}
 
 interface Requisicao {
   id: number

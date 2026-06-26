@@ -3,7 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
+# Variáveis de ambiente
 .env
+.env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 dist/
 dist-ssr/
@@ -19,6 +24,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -26,7 +32,9 @@ lerna-debug.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -36,8 +44,16 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Cache
 .eslintcache
 .stylelintcache
 tsbuildinfo
 *.tsbuildinfo
 .vite/
+
+# Vercel
+.vercel/
+
+# Runtime
+*.pid
+*.seed

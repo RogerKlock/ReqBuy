@@ -31,7 +31,8 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query(
       `INSERT INTO solicitacoes_compra (title, description, amount, requester_id, department_id)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, title, description, amount, status, requester_id, department_id, created_at`,
       [title, description, amount, user.id, user.departmentId]
     )
     await logAudit({

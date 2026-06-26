@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS logs_auditoria (
   resource    VARCHAR(100),
   resource_id INTEGER,
   ip_address  VARCHAR(45),
-  created_at  TIMESTAMPTZ DEFAULT NOW()
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  expires_at  TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '90 days') NOT NULL
 );
 
 -- Departamentos iniciais (ON CONFLICT para ser idempotente)
@@ -61,3 +62,15 @@ INSERT INTO departamentos (name) VALUES
   ('Financeiro'),
   ('Operações')
 ON CONFLICT (name) DO NOTHING;
+
+-- =============================================
+-- Índices de performance
+-- =============================================
+CREATE INDEX IF NOT EXISTS idx_solicitacoes_requester_id  ON solicitacoes_compra (requester_id);
+CREATE INDEX IF NOT EXISTS idx_solicitacoes_department_id ON solicitacoes_compra (department_id);
+CREATE INDEX IF NOT EXISTS idx_solicitacoes_status        ON solicitacoes_compra (status);
+CREATE INDEX IF NOT EXISTS idx_solicitacoes_created_at    ON solicitacoes_compra (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_acoes_request_id           ON acoes_solicitacao (request_id);
+CREATE INDEX IF NOT EXISTS idx_logs_user_id               ON logs_auditoria (user_id);
+CREATE INDEX IF NOT EXISTS idx_logs_created_at            ON logs_auditoria (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_logs_expires_at            ON logs_auditoria (expires_at);

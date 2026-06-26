@@ -16,7 +16,7 @@ import departmentRoutes from './routes/departments'
 const app  = express()
 const PORT = process.env.PORT ?? 3001
 
-// CORREÇÃO #4: Helmet — headers de segurança HTTP
+// Helmet — headers de segurança HTTP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {

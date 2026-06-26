@@ -49,12 +49,16 @@ export function isTokenRevoked(jti: string): boolean {
 
 // Middleware de autenticação com checagem de blacklist
 export function authenticateWithBlacklist(req: AuthRequest, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization
-  if (!header?.startsWith('Bearer ')) {
+  const token: string | undefined =
+    req.cookies?.reqbuy_token ??
+    (req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7)
+      : undefined)
+
+  if (!token) {
     res.status(401).json({ error: 'Token não fornecido' })
     return
   }
-  const token = header.slice(7)
   try {
     const payload = jwt.verify(token, JWT_SECRET) as {
       id: number; role: string; departmentId: number; jti: string

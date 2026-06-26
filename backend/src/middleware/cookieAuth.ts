@@ -1,9 +1,3 @@
-/**
- * Cookie HttpOnly + Secure no lugar de sessionStorage
- *
- * Instalação: npm install cookie-parser  &&  npm i -D @types/cookie-parser
- */
-
 import { Response } from 'express'
 
 const COOKIE_NAME  = 'reqbuy_token'
