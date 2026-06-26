@@ -86,7 +86,7 @@ router.post('/login', loginRateLimiter, accountLockoutMiddleware, async (req: Re
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       recordLoginFailure(email)   // conta falhas por e-mail
       await logAudit({ userId: null, action: 'LOGIN_FALHOU', resource: 'usuarios', ip })
-      res.status(401).json({ error: 'Credenciais inválidas' })
+      res.status(401).json({ error: 'E-mail ou senha inválidos' })
       return
     }
 

@@ -49,13 +49,29 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+
+    if (password.length < 8) {
+      toast.error('A senha deve ter no mínimo 8 caracteres.')
+      return
+    }
+    if (!/[A-Z]/.test(password)) {
+      toast.error('A senha deve conter ao menos uma letra maiúscula.')
+      return
+    }
+    if (!/[0-9]/.test(password)) {
+      toast.error('A senha deve conter ao menos um número.')
+      return
+    }
+
     setLoading(true)
     try {
       await register({ name, email, password, departmentId })
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
-    } catch {
-      toast.error('Erro ao criar conta. Verifique os dados e tente novamente.')
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { error?: string } } }
+      const backendMessage = axiosError?.response?.data?.error
+      toast.error(backendMessage || 'Erro ao criar conta. Verifique os dados e tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -112,9 +128,9 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mín. 8 caracteres, 1 maiúscula e 1 número"
               icon={<Lock size={18} />}
             />
 

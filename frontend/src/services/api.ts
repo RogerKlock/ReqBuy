@@ -31,7 +31,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const requestUrl = error.config?.url ?? ''
-    if (error.response?.status === 401 && !requestUrl.endsWith('/auth/me')) {
+    if (
+      error.response?.status === 401 &&
+      !requestUrl.endsWith('/auth/me') &&
+      !requestUrl.endsWith('/auth/login')
+    ) {
       sessionStorage.removeItem('user')
       window.location.href = '/login'
     }

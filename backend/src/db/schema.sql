@@ -55,6 +55,17 @@ CREATE TABLE IF NOT EXISTS logs_auditoria (
   expires_at  TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '90 days') NOT NULL
 );
 
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'departamentos_name_key'
+      AND conrelid = 'departamentos'::regclass
+  ) THEN
+    ALTER TABLE departamentos ADD CONSTRAINT departamentos_name_key UNIQUE (name);
+  END IF;
+END $$;
+
 -- Departamentos iniciais (ON CONFLICT para ser idempotente)
 INSERT INTO departamentos (name) VALUES
   ('TI'),

@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../contexts/useAuth'
-import Card from '../components/ui/Card'
-import InputField from '../components/ui/InputField'
-import Button from '../components/ui/Button'
-import { toast } from 'sonner'
-import { ShoppingCart, Mail, Lock, ArrowRight } from 'lucide-react'
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/useAuth";
+import Card from "../components/ui/Card";
+import InputField from "../components/ui/InputField";
+import Button from "../components/ui/Button";
+import { toast } from "sonner";
+import { ShoppingCart, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -25,7 +25,7 @@ export default function LoginPage() {
     } catch {
       toast.error('E-mail ou senha inválidos.')
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -37,13 +37,21 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <ShoppingCart size={28} className="text-black" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">ReqBuy</h1>
-          <p className="text-text-secondary mt-1 text-sm">Sistema de Requisições de Compra</p>
+          <h1 className="text-3xl font-bold text-text-primary tracking-tight">
+            ReqBuy
+          </h1>
+          <p className="text-text-secondary mt-1 text-sm">
+            Sistema de Requisições de Compra
+          </p>
         </div>
 
         <Card padding="lg">
-          <h2 className="text-xl font-semibold text-text-primary mb-1">Bem-vindo de volta</h2>
-          <p className="text-text-muted text-sm mb-6">Entre com suas credenciais para continuar</p>
+          <h2 className="text-xl font-semibold text-text-primary mb-1">
+            Bem-vindo de volta
+          </h2>
+          <p className="text-text-muted text-sm mb-6">
+            Entre com suas credenciais para continuar
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <InputField
@@ -81,12 +89,12 @@ export default function LoginPage() {
               loading={loading}
               icon={<ArrowRight size={18} />}
             >
-              {!loading && 'Entrar'}
+              {!loading && "Entrar"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-text-muted mt-6">
-            Não tem conta?{' '}
+            Não tem conta?{" "}
             <Link
               to="/register"
               className="text-accent hover:text-accent-hover font-medium transition-colors no-underline"
@@ -97,5 +105,5 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
