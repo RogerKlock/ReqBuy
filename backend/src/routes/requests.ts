@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { pool } from '../db/connection'
 import { authenticate, authorize, AuthRequest } from '../middleware/auth'
 import { logAudit } from '../services/audit'
+import { csrfProtection } from '../middleware/csrf'
 
 const router = Router()
 
@@ -17,7 +18,7 @@ const actionSchema = z.object({
   comment: z.string().optional(),
 })
 
-router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
+router.post('/', authenticate, csrfProtection, async (req: AuthRequest, res: Response) => {
   const parsed = createSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Dados inválidos', details: parsed.error.flatten() })
@@ -91,6 +92,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.post(
   '/:id/action',
   authenticate,
+  csrfProtection,
   authorize('aprovador', 'financeiro'),
   async (req: AuthRequest, res: Response) => {
     const parsed = actionSchema.safeParse(req.body)

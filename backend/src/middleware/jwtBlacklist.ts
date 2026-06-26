@@ -1,16 +1,22 @@
 /**
  * Invalidação de Tokens JWT (Blacklist por JTI)
  *
- * Instalação: npm install uuid  &&  npm i -D @types/uuid
  */
 
-import { v4 as uuidv4 } from 'uuid'
+import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
 import { AuthRequest } from './auth'
 
-const JWT_SECRET      = process.env.JWT_SECRET!
 const JWT_EXPIRY_SECS = 8 * 60 * 60   // espelha o '8h' usado nas rotas
+
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret || secret.length < 32 || secret.includes('coloque_aqui')) {
+    throw new Error('JWT_SECRET deve ter pelo menos 32 caracteres e não pode usar o valor de exemplo.')
+  }
+  return secret
+}
 
 // Blacklist em memória: jti → expiresAt (ms)
 // Em produção use Redis: SET jti "" EX <ttl_seconds>
@@ -27,8 +33,8 @@ setInterval(() => {
 // Geração de token com JTI
 export function generateToken(payload: { id: number; role: string; departmentId: number }): string {
   return jwt.sign(
-    { ...payload, jti: uuidv4() },
-    JWT_SECRET,
+    { ...payload, jti: crypto.randomUUID() },
+    getJwtSecret(),
     { expiresIn: JWT_EXPIRY_SECS }
   )
 }
@@ -60,7 +66,7 @@ export function authenticateWithBlacklist(req: AuthRequest, res: Response, next:
     return
   }
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as {
+    const payload = jwt.verify(token, getJwtSecret()) as {
       id: number; role: string; departmentId: number; jti: string
     }
     if (isTokenRevoked(payload.jti)) {

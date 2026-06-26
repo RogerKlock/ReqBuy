@@ -7,6 +7,7 @@ import { loginRateLimiter, accountLockoutMiddleware, recordLoginFailure, resetLo
 import { generateToken, revokeToken } from '../middleware/jwtBlacklist'
 import { authenticateWithBlacklist } from '../middleware/jwtBlacklist'
 import { setTokenCookie, clearTokenCookie } from '../middleware/cookieAuth'
+import { csrfProtection, issueCsrfCookie } from '../middleware/csrf'
 
 const router = Router()
 
@@ -109,9 +110,44 @@ router.post('/login', loginRateLimiter, accountLockoutMiddleware, async (req: Re
   }
 })
 
+// GET /auth/me
+// Restaura a sessão a partir do cookie HttpOnly, sem expor o token ao frontend.
+router.get('/me', authenticateWithBlacklist, async (req: Request, res: Response) => {
+  const userId = (req as Request & { user?: { id: number } }).user?.id
+
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, role, department_id FROM usuarios WHERE id = $1',
+      [userId]
+    )
+    const user = result.rows[0]
+
+    if (!user) {
+      clearTokenCookie(res)
+      res.status(401).json({ error: 'Sessão inválida' })
+      return
+    }
+
+    if (!req.cookies?.reqbuy_csrf) issueCsrfCookie(res)
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        departmentId: user.department_id,
+      },
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Erro interno do servidor' })
+  }
+})
+
 // POST /auth/logout
 // revoga o token atual na blacklist
-router.post('/logout', authenticateWithBlacklist, (req: Request, res: Response) => {
+router.post('/logout', authenticateWithBlacklist, csrfProtection, (req: Request, res: Response) => {
   const token = req.cookies?.reqbuy_token ?? req.headers.authorization?.slice(7)
   if (token) revokeToken(token)
   clearTokenCookie(res)   // limpa o cookie

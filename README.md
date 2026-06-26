@@ -20,11 +20,12 @@ O **ReqBuy** é uma aplicação web focada na gestão segura de requisições de
 
 O foco principal do desenvolvimento é a aplicação prática de controles de **Segurança da Informação**, incluindo:
 
-* **Autenticação Segura:** Senhas armazenadas com bcrypt (hash + salt).
+* **Autenticação Segura:** Senhas armazenadas com bcrypt (hash + salt) e sessão em cookie HttpOnly.
 * **Autorização (RBAC):** Controle estrito de acesso baseado em perfis; usuários comuns visualizam apenas seus próprios dados.
 * **Trilhas de Auditoria:** Registro de ações críticas (login, criação, aprovação, rejeição e tentativas de acesso não autorizado).
 * **Gestão de Segredos:** Variáveis sensíveis isoladas em `.env` (não versionado).
 * **Validação no Servidor:** Sanitização e validação de entradas via Zod antes de qualquer operação no banco.
+* **Proteção CSRF:** Operações mutáveis autenticadas exigem cabeçalho `X-CSRF-Token`.
 
 ---
 
@@ -184,17 +185,22 @@ ON CONFLICT (name) DO NOTHING;
 
 Fluxo de autenticação
   1. Cliente envia e-mail + senha  →  POST /api/auth/login
-  2. Backend valida credenciais e retorna JWT assinado (8h)
-  3. Cliente armazena token em memória (sessionStorage em fallback)
-  4. Toda rota protegida exige header: Authorization: Bearer <token>
-  5. Middleware verifica e decodifica o JWT antes de cada handler
-  6. Todas as ações críticas são registradas em audit_logs
+  2. Backend valida credenciais e emite JWT assinado (8h) em cookie HttpOnly
+  3. Backend também emite cookie legível `reqbuy_csrf` para proteção CSRF
+  4. Cliente mantém apenas dados não sensíveis do usuário em sessionStorage
+  5. Ao recarregar a página, GET /api/auth/me restaura a sessão pelo cookie
+  6. Operações POST/PUT/PATCH/DELETE enviam X-CSRF-Token
+  7. Middleware verifica JWT, blacklist, RBAC e CSRF antes dos handlers
+  8. Todas as ações críticas são registradas em logs_auditoria
 
 Segurança em camadas
   • CORS restrito à origem do frontend
+  • Cookies HttpOnly, SameSite=Strict e Secure em produção
+  • Proteção CSRF por token assinado
   • Validação de entrada via Zod (antes do banco)
   • RBAC aplicado no middleware de autorização
   • Verificação de dono do recurso nas rotas de listagem
+  • Validação de JWT_SECRET forte na inicialização
   • Variáveis sensíveis isoladas em .env (não versionado)
 ```
 
@@ -205,7 +211,8 @@ Segurança em camadas
 | Risco | Probabilidade | Impacto | Controle Aplicado |
 |---|:---:|:---:|---|
 | Força bruta na autenticação | Alta | Alto | Hash bcrypt (custo 12) + registro de tentativas falhas no log |
-| Token JWT comprometido | Média | Alto | Segredo longo em `.env`, expiração de 8h |
+| Token JWT comprometido | Média | Alto | Cookie HttpOnly, segredo longo em `.env`, expiração de 8h e blacklist no logout |
+| CSRF em rotas autenticadas | Média | Alto | SameSite=Strict + token CSRF assinado em operações mutáveis |
 | Acesso indevido de perfil inferior | Média | Alto | Middleware RBAC em todas as rotas protegidas |
 | Injeção de dados maliciosos (SQL/XSS) | Média | Alto | Validação Zod no servidor + queries parametrizadas (pg) |
 | Exposição de credenciais do banco | Baixa | Crítico | Variáveis em `.env` não versionado, `.gitignore` configurado |

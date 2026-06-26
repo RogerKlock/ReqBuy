@@ -4,8 +4,10 @@ import morgan from 'morgan'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
+import { getJwtSecret } from './middleware/jwtBlacklist'
 
 dotenv.config()
+getJwtSecret()
 
 // rotas agora sob /api/v1/
 import authRoutes       from './routes/auth'
