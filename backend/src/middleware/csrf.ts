@@ -34,7 +34,7 @@ export function issueCsrfCookie(res: Response): string {
   res.cookie(CSRF_COOKIE_NAME, token, {
     httpOnly: false,
     secure: IS_PROD,
-    sameSite: 'strict',
+    sameSite: IS_PROD ? 'none' : 'strict',  // 'none' em prod (cross-domain)
     maxAge: 8 * 60 * 60 * 1000,
     path: '/',
   })

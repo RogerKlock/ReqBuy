@@ -1,0 +1,12 @@
+# Ignorar tudo desnecessário no Docker build
+node_modules
+frontend
+.git
+.github
+.vscode
+.env
+.env.*
+*.md
+dist
+docker-compose.yml
+.gitignore

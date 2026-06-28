@@ -18,6 +18,9 @@ import departmentRoutes from './routes/departments'
 const app  = express()
 const PORT = process.env.PORT ?? 3001
 
+// Confiar no proxy reverso do Render (necessário para req.secure e x-forwarded-proto)
+app.set('trust proxy', 1)
+
 // Helmet — headers de segurança HTTP
 app.use(helmet({
   contentSecurityPolicy: {
